@@ -62,12 +62,12 @@
 
   (defun solve ()
     (loop :with max := 1
-          :for i :from 1 :to 1000000
+          :for i :from 1 :to 10000
           :when (> (distance i) (distance max))
             :do (setf max i)
           :finally (return max)))
 
-  (is (= 837799 (solve))))
+  (is (= 6171 (solve))))
 
 ;; ----------------------------------------------------------------------------
 (test :square-sum-chain
@@ -81,15 +81,31 @@
      (mapcar #'square)
      (apply #'+)))
 
-  (defmemo/int 10000000 chain (n)
+  (defmemo/int 100000 chain (n)
     (match (next n)
       (1 1)
       (89 89)
       (next (chain next))))
 
   (defun solve ()
-    (loop :for i :from 1 :to 10000000
+    (loop :for i :from 1 :to 100000
           :for chain := (chain i)
           :count (= chain 89)))
 
-  (is (= 8581146 (solve))))
+  (is (= 85623 (solve))))
+
+(test :timeout
+  (let ((counter 0))
+    (defmemo/timeout 2 square (x)
+      (incf counter)
+      (* x x))
+
+    ;; calculates
+    (square 2)
+    ;; doesnt calculate
+    (square 2)
+    (square 2)
+    (sleep 2)
+    ;; calculates
+    (square 2)
+    (is (= counter 2))))

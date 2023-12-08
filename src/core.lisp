@@ -2,6 +2,7 @@
   (:use :cl :alexandria)
   (:export #:defmemo
            #:defmemo/atomic
+           #:defmemo/timeout
            #:defmemo/int))
 (in-package :memeozi)
 
@@ -34,6 +35,24 @@
                 (let ((result (progn ,@body)))
                   (bt:with-lock-held (,lock-name)
                     (setf (gethash (list ,@args) ,memo-name) result))))))))
+
+;; ----------------------------------------------------------------------------
+(defmacro defmemo/timeout (timeout name args &body body)
+  "General thread-safe memoization macro, result is recalculated if the memoized value is older than timeout seconds"
+  (let ((memo-name (suffix-name name "-memo"))
+        (lock-name (suffix-name name "-memo-lock")))
+    `(progn (defparameter ,memo-name (make-hash-table :test #'equal))
+            (defparameter ,lock-name (bt:make-lock))
+            (defun ,name ,args
+              (let ((memo (bt:with-lock-held (,lock-name)
+                            (gethash (list ,@args) ,memo-name))))
+                (if (and memo (< (get-universal-time) (+ ,timeout (car memo))))
+                    (cdr memo)
+                    (let ((result (progn ,@body)))
+                      (bt:with-lock-held (,lock-name)
+                        (setf (gethash (list ,@args) ,memo-name)
+                              (cons (get-universal-time) result)))
+                      result)))))))
 
 ;; ----------------------------------------------------------------------------
 (defmacro defmemo/int (size name (in) &body body)

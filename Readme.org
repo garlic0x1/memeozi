@@ -20,4 +20,6 @@ Use defmemo just like defun, results of the function will be stored in a #'equal
 
 Use defmemo/atomic for a thread-safe version of defmemo, only reading and writing to the memo table hold the lock, the lock is not held while the result is being calculated.
 
+Use defmemo/timeout to specify how old a result can be in seconds, if the stored value is too old, it will be recalculated.
+
 Use defmemo/int->int to use a vector of integers and lookup by index, this is useful for number chain problems as demonstrated in the tests.
