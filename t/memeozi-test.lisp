@@ -81,7 +81,7 @@
      (mapcar #'square)
      (apply #'+)))
 
-  (defmemo/int->int 10000000 chain (n)
+  (defmemo/int 10000000 chain (n)
     (match (next n)
       (1 1)
       (89 89)
