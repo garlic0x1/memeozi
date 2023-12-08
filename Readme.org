@@ -1,0 +1,23 @@
+#+title: Memeozi
+
+* Introduction
+A library for memoizing functions
+#+begin_src bash
+git clone https://github.com/garlic0x1/memeozi.git ~/quicklisp/local-projects/
+#+end_src
+
+* Usage
+Use defmemo just like defun, results of the function will be stored in a #'equal hash-table which is checked before doing work when called again:
+#+begin_src lisp
+(ql:quickload :memeozi)
+(use-package :memeozi)
+
+(defmemo times (a b)
+  (* a b))
+
+(is (= 8 (times 2 4)))
+#+end_src
+
+Use defmemo/atomic for a thread-safe version of defmemo, only reading and writing to the memo table hold the lock, the lock is not held while the result is being calculated.
+
+Use defmemo/int->int to use a vector of integers and lookup by index, this is useful for number chain problems as demonstrated in the tests.
