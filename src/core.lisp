@@ -1,5 +1,6 @@
 (defpackage #:memeozi
   (:use :cl :alexandria)
+  (:import-from :bt2 #:with-lock-held #:make-lock)
   (:export #:defmemo
            #:defmemo/atomic
            #:defmemo/timeout
@@ -27,13 +28,13 @@
   (let ((memo-name (suffix-name name "-memo"))
         (lock-name (suffix-name name "-memo-lock")))
     `(progn (defparameter ,memo-name (make-hash-table :test #'equal))
-            (defparameter ,lock-name (bt:make-lock))
+            (defparameter ,lock-name (make-lock))
             (defun ,name ,args
-              (if-let ((memo (bt:with-lock-held (,lock-name)
+              (if-let ((memo (with-lock-held (,lock-name)
                                (gethash (list ,@args) ,memo-name))))
                 memo
                 (let ((result (progn ,@body)))
-                  (bt:with-lock-held (,lock-name)
+                  (with-lock-held (,lock-name)
                     (setf (gethash (list ,@args) ,memo-name) result))))))))
 
 ;; ----------------------------------------------------------------------------
@@ -42,14 +43,14 @@
   (let ((memo-name (suffix-name name "-memo"))
         (lock-name (suffix-name name "-memo-lock")))
     `(progn (defparameter ,memo-name (make-hash-table :test #'equal))
-            (defparameter ,lock-name (bt:make-lock))
+            (defparameter ,lock-name (make-lock))
             (defun ,name ,args
-              (let ((memo (bt:with-lock-held (,lock-name)
+              (let ((memo (with-lock-held (,lock-name)
                             (gethash (list ,@args) ,memo-name))))
                 (if (and memo (< (get-universal-time) (+ ,timeout (car memo))))
                     (cdr memo)
                     (let ((result (progn ,@body)))
-                      (bt:with-lock-held (,lock-name)
+                      (with-lock-held (,lock-name)
                         (setf (gethash (list ,@args) ,memo-name)
                               (cons (get-universal-time) result)))
                       result)))))))

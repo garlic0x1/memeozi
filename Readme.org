@@ -22,4 +22,4 @@ Use defmemo/atomic for a thread-safe version of defmemo, only reading and writin
 
 Use defmemo/timeout to specify how old a result can be in seconds, if the stored value is too old, it will be recalculated. This macro is also thread-safe like defmemo/atomic.
 
-Use defmemo/int->int to use a vector of integers and lookup by index, this is useful for number chain problems as demonstrated in the tests.
+Use defmemo/int to use a vector and lookup by index, this is useful for number chain problems as demonstrated in the tests.
