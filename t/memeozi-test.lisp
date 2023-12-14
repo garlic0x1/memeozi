@@ -1,5 +1,5 @@
 (defpackage #:memeozi-test
-  (:use :cl :fiveam :alexandria-2 :memeozi)
+  (:use :cl :fiveam :alexandria-2 :memeozi :memeozi/types)
   (:import-from :trivia :match))
 (in-package :memeozi-test)
 
@@ -117,10 +117,7 @@
   (square 3)
   (square 4)
   (square 5)
-
   (is (= 5 (memo-count square-memo)))
-
   (square 6)
   (square 7)
-  (is (= 2 (memo-count square-memo)))
-  )
+  (is (= 2 (memo-count square-memo))))

@@ -4,4 +4,6 @@
   :license "MIT"
   :depends-on (:alexandria :cl-annot :bordeaux-threads)
   :components ((:module "src"
-                :components ((:file "core")))))
+                :components ((:file "types")
+                             (:file "methods")
+                             (:file "core")))))
