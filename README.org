@@ -28,3 +28,5 @@ Options can be provided to modify the behavior of the memoizer:
 This example will memoize up to 500 values, and will not return results older than 5 seconds.
 
 Currently the only two options are limit and timeout, if a limit is set, the method "purge" is called to delete entries with below-average lookup frequencies along with any outdated entries.
+
+Automatic access and manipulation of the memo table is protected by a lock, so you shouldn't have to worry about using a memoized function from multiple threads.
