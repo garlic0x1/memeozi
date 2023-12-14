@@ -34,7 +34,7 @@
     :accessor memo-entry-value
     :documentation "The stored memo value")
    (count
-    :initform 0
+    :initform 1
     :accessor memo-entry-count
     :documentation "Frequency count of usage")
    (age
@@ -57,41 +57,41 @@
     :initform (bt2:make-lock)
     :accessor memo-fn-lock
     :documentation "Lock to be used by internal methods")
-   (limit
+   (size-limit
     :initarg :limit
-    :accessor memo-fn-limit
+    :accessor memo-fn-size-limit
     :documentation "Size limit of the memo-table, nil means no limit")
-   (timeout
+   (age-limit
     :initarg :timeout
-    :accessor memo-fn-timeout
+    :accessor memo-fn-age-limit
     :documentation "Maximum age of results")))
 
 ;; ----------------------------------------------------------------------------
 (defmethod lookup ((obj memo-fn) key)
   (with-lock-held ((memo-fn-lock obj))
     (when-let ((memo (gethash key (memo-fn-table obj))))
-      (let ((timeout (memo-fn-timeout obj)))
+      (let ((timeout (memo-fn-age-limit obj)))
         (unless (and timeout (> (get-universal-time) (+ timeout (memo-entry-age memo))))
           (incf (memo-entry-count memo))
           (memo-entry-value memo))))))
 
 ;; ----------------------------------------------------------------------------
-(defmethod average-count ((obj memo-fn))
-  (let ((table (memo-fn-table obj)))
-    (ceiling
-     (/ (reduce #'+ (maphash (lambda (k v) (declare (ignore k)) (memo-entry-count v)) table))
-        (hash-table-count table)))))
+(defmethod mean-count ((obj memo-fn))
+  (let* ((table (memo-fn-table obj))
+         (numer (reduce #'+ (mapcar #'memo-entry-count (hash-table-values table))))
+         (denom (hash-table-count table)))
+    (ceiling (/ numer denom))))
 
 ;; ----------------------------------------------------------------------------
 (defmethod purge ((obj memo-fn))
-  (let* ((average (average-count obj))
-         (timeout (memo-fn-timeout obj))
+  (let* ((mean (mean-count obj))
+         (timeout (memo-fn-age-limit obj))
          (too-old (lambda (v) (and timeout (< (- (get-universal-time) timeout) (memo-entry-age v)))))
-         (too-rare (lambda (v) (< (memo-entry-count v) average))))
+         (too-rare (lambda (v) (< (memo-entry-count v) mean))))
     (loop :for k :being :the :hash-keys :of (memo-fn-table obj)
           :for v := (gethash k (memo-fn-table obj))
-          :when (or (funcall too-old v) (funcall too-rare v))
-            :do (remhash k (memo-fn-table obj)))))
+          :do (when (or (funcall too-old v) (funcall too-rare v))
+                (remhash k (memo-fn-table obj))))))
 
 ;; ----------------------------------------------------------------------------
 (defmethod calculate ((obj memo-fn) args)
@@ -100,7 +100,7 @@
 ;; ----------------------------------------------------------------------------
 (defmethod record ((obj memo-fn) args value)
   (with-lock-held ((memo-fn-lock obj))
-    (let ((limit (memo-fn-limit obj)))
+    (let ((limit (memo-fn-size-limit obj)))
       (when (and limit (> (hash-table-count (memo-fn-table obj)) limit))
         (purge obj))
       (setf (gethash args (memo-fn-table obj))

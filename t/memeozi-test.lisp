@@ -8,17 +8,19 @@
 (in-suite :memeozi)
 
 ;; ----------------------------------------------------------------------------
+(defun memo-count (m)
+  (hash-table-count (memo-fn-table m)))
+
+;; ----------------------------------------------------------------------------
 (test :basic
   (defmemo () square (x)
     (* x x))
   (is (= 64 (square 8)))
-  (is (= 1 (hash-table-count (memo-fn-table square-memo))))
-
   (is (= 64 (square 8)))
-  (is (= 1 (hash-table-count (memo-fn-table square-memo))))
+  (is (= 1 (memo-count square-memo)))
 
   (is (= 16 (square 4)))
-  (is (= 2 (hash-table-count (memo-fn-table square-memo)))))
+  (is (= 2 (memo-count square-memo))))
 
 ;; ----------------------------------------------------------------------------
 (test :list-args
@@ -26,13 +28,13 @@
     (apply (curry #'concatenate 'string) str-list))
 
   (is (equal "hi world" (concat-str '("hi" " " "world"))))
-  (is (= 1 (hash-table-count (memo-fn-table concat-str-memo))))
+  (is (= 1 (memo-count concat-str-memo)))
 
   (is (equal "hi world!" (concat-str '("hi" " " "world!"))))
-  (is (= 2 (hash-table-count (memo-fn-table concat-str-memo))))
+  (is (= 2 (memo-count concat-str-memo)))
 
   (is (equal "hi world!" (concat-str '("hi" " " "world!"))))
-  (is (= 2 (hash-table-count (memo-fn-table concat-str-memo)))))
+  (is (= 2 (memo-count concat-str-memo))))
 
 ;; ----------------------------------------------------------------------------
 (test :collatz-chain
@@ -93,7 +95,32 @@
     ;; doesnt calculate
     (square 2)
     (square 2)
+    (is (= 3 (memo-entry-count (gethash '(2) (memo-fn-table square-memo)))))
+    (is (= counter 1))
     (sleep 2)
     ;; calculates
     (square 2)
-    (is (= counter 2))))
+    (is (= counter 2))
+    (is (= 1 (memo-entry-count (gethash '(2) (memo-fn-table square-memo)))))
+    (is (= 1 (memo-count square-memo)))))
+
+;; ----------------------------------------------------------------------------
+(test :size-limit
+  (defmemo (:limit 5) square (x)
+    (* x x))
+
+  (square 1)
+  (square 2)
+  (square 2)
+  (square 2)
+  (square 2)
+  (square 3)
+  (square 4)
+  (square 5)
+
+  (is (= 5 (memo-count square-memo)))
+
+  (square 6)
+  (square 7)
+  (is (= 2 (memo-count square-memo)))
+  )
