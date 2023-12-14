@@ -1,8 +1,9 @@
-(defpackage #:memeozi
+(defpackage #:memeozi/core
+  (:nicknames #:memeozi)
   (:use :cl :alexandria :memeozi/types :memeozi/methods)
   (:import-from :bt2 #:with-lock-held #:make-lock)
   (:export #:defmemo #:defmemo/simple))
-(in-package :memeozi)
+(in-package :memeozi/core)
 
 ;; ----------------------------------------------------------------------------
 (defun suffix-name (name suffix)

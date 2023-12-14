@@ -28,8 +28,9 @@
          (too-rare (lambda (v) (< (memo-entry-count v) mean))))
     (loop :for k :being :the :hash-keys :of (memo-fn-table obj)
           :for v := (gethash k (memo-fn-table obj))
-          :do (when (or (funcall too-old v) (funcall too-rare v))
-                (remhash k (memo-fn-table obj))))))
+          :do (if (or (funcall too-old v) (funcall too-rare v))
+                  (remhash k (memo-fn-table obj))
+                  (setf (memo-entry-count v) 1)))))
 
 ;; ----------------------------------------------------------------------------
 (defmethod calculate ((obj memo-fn) args)

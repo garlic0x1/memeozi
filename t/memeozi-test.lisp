@@ -127,7 +127,9 @@
   (is (= 5 (memo-count square-memo)))
   (square 6)
   (square 7)
-  (is (= 2 (memo-count square-memo))))
+  (is (= 2 (memo-count square-memo)))
+  (loop :for v :being :the :hash-values :of (memo-fn-table square-memo)
+        :do (is (= 1 (memo-entry-count v)))))
 
 ;; ----------------------------------------------------------------------------
 (test :race
