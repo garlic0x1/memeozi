@@ -1,8 +1,7 @@
 (asdf:defsystem "memeozi"
-  :description "A collection of memoization macros"
+  :description "A memoization library for Common Lisp"
   :author "garlic0x1"
   :license "MIT"
   :depends-on (:alexandria :cl-annot :bordeaux-threads)
   :components ((:module "src"
-                :components (;; (:file "types")
-                             (:file "core")))))
+                :components ((:file "core")))))

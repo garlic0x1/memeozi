@@ -5,9 +5,10 @@ A library for memoizing functions
 #+begin_src bash
 git clone https://github.com/garlic0x1/memeozi.git ~/quicklisp/local-projects/
 #+end_src
+The name is just "memoize" with vowels shifted :)
 
 * Usage
-Use defmemo like defun, results of the function will be stored and checked before doing work when called again:
+Use defmemo like defun, with a plist of options before the name. Results of the function will be stored and checked before doing work when called again:
 #+begin_src lisp
 (ql:quickload :memeozi)
 (use-package :memeozi)
@@ -20,8 +21,10 @@ Use defmemo like defun, results of the function will be stored and checked befor
 
 Options can be provided to modify the behavior of the memoizer:
 #+begin_src lisp
-(defmemo (:limit 500 :timeout 5) (in)
+(defmemo (:limit 500 :timeout 5) dostuff (in)
     (stuff in))
 #+end_src
 
 This example will memoize up to 500 values, and will not return results older than 5 seconds.
+
+Currently the only two options are limit and timeout, if a limit is set, the method "purge" is called to delete entries with below-average lookup frequencies along with any outdated entries.
