@@ -12,15 +12,24 @@
   (hash-table-count (memo-fn-table m)))
 
 ;; ----------------------------------------------------------------------------
-(test :basic
-  (defmemo () square (x)
-    (* x x))
-  (is (= 64 (square 8)))
-  (is (= 64 (square 8)))
-  (is (= 1 (memo-count square-memo)))
+(test :macros
+  (defmemo (:size-limit 100 :age-limit 30) add (a b)
+    (+ a b))
 
+  (is (= 100 (memo-fn-size-limit add-memo)))
+  (is (= 30 (memo-fn-age-limit add-memo)))
+  (is (eql :frequency (memo-fn-strategy add-memo))))
+
+;; ----------------------------------------------------------------------------
+(test :basic
+  (defmemo/simple square (x)
+    (* x x))
+
+  (is (= 64 (square 8)))
+  (is (= 64 (square 8)))
+  (is (= 1 (hash-table-count square-memo)))
   (is (= 16 (square 4)))
-  (is (= 2 (memo-count square-memo))))
+  (is (= 2 (hash-table-count square-memo))))
 
 ;; ----------------------------------------------------------------------------
 (test :list-args
@@ -29,10 +38,8 @@
 
   (is (equal "hi world" (concat-str '("hi" " " "world"))))
   (is (= 1 (memo-count concat-str-memo)))
-
   (is (equal "hi world!" (concat-str '("hi" " " "world!"))))
   (is (= 2 (memo-count concat-str-memo)))
-
   (is (equal "hi world!" (concat-str '("hi" " " "world!"))))
   (is (= 2 (memo-count concat-str-memo))))
 
@@ -86,7 +93,7 @@
 ;; ----------------------------------------------------------------------------
 (test :timeout
   (let ((counter 0))
-    (defmemo (:timeout 1) square (x)
+    (defmemo (:age-limit 1) square (x)
       (incf counter)
       (* x x))
 
@@ -106,7 +113,7 @@
 
 ;; ----------------------------------------------------------------------------
 (test :size-limit
-  (defmemo (:limit 5) square (x)
+  (defmemo (:size-limit 5) square (x)
     (* x x))
 
   (square 1)
@@ -121,3 +128,21 @@
   (square 6)
   (square 7)
   (is (= 2 (memo-count square-memo))))
+
+;; ----------------------------------------------------------------------------
+(test :race
+  (defmemo () square (x)
+    (* x x))
+
+  (let ((t1 (bt2:make-thread
+             (lambda () (loop :for i :from 1 :to 100
+                         :sum (square i) :into total
+                         :finally (return total)))))
+        (t2 (bt2:make-thread
+             (lambda () (loop :for i :from 100 :to 200
+                         :sum (square i) :into total
+                         :finally (return total))))))
+    (let ((r1 (bt2:join-thread t1))
+          (r2 (bt2:join-thread t2)))
+      (is (= r1 338350))
+      (is (= r2 2358350)))))
