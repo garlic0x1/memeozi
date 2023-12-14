@@ -2,6 +2,7 @@
   :description "A collection of memoization macros"
   :author "garlic0x1"
   :license "MIT"
-  :depends-on (:alexandria :bordeaux-threads)
+  :depends-on (:alexandria :cl-annot :bordeaux-threads)
   :components ((:module "src"
-                :components ((:file "core")))))
+                :components (;; (:file "types")
+                             (:file "core")))))

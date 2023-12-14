@@ -9,43 +9,30 @@
 
 ;; ----------------------------------------------------------------------------
 (test :basic
-  (defmemo square (x)
+  (defmemo () square (x)
     (* x x))
   (is (= 64 (square 8)))
-  (is (= 1 (hash-table-count square-memo)))
+  (is (= 1 (hash-table-count (memo-fn-table square-memo))))
 
   (is (= 64 (square 8)))
-  (is (= 1 (hash-table-count square-memo)))
+  (is (= 1 (hash-table-count (memo-fn-table square-memo))))
 
   (is (= 16 (square 4)))
-  (is (= 2 (hash-table-count square-memo))))
+  (is (= 2 (hash-table-count (memo-fn-table square-memo)))))
 
 ;; ----------------------------------------------------------------------------
 (test :list-args
-  (defmemo concat-str (str-list)
+  (defmemo () concat-str (str-list)
     (apply (curry #'concatenate 'string) str-list))
 
   (is (equal "hi world" (concat-str '("hi" " " "world"))))
-  (is (= 1 (hash-table-count concat-str-memo)))
+  (is (= 1 (hash-table-count (memo-fn-table concat-str-memo))))
 
   (is (equal "hi world!" (concat-str '("hi" " " "world!"))))
-  (is (= 2 (hash-table-count concat-str-memo)))
+  (is (= 2 (hash-table-count (memo-fn-table concat-str-memo))))
 
   (is (equal "hi world!" (concat-str '("hi" " " "world!"))))
-  (is (= 2 (hash-table-count concat-str-memo))))
-
-;; ----------------------------------------------------------------------------
-(test :basic/atomic
-  (defmemo/atomic square (x)
-    (* x x))
-  (is (= 64 (square 8)))
-  (is (= 1 (hash-table-count square-memo)))
-
-  (is (= 64 (square 8)))
-  (is (= 1 (hash-table-count square-memo)))
-
-  (is (= 16 (square 4)))
-  (is (= 2 (hash-table-count square-memo))))
+  (is (= 2 (hash-table-count (memo-fn-table concat-str-memo)))))
 
 ;; ----------------------------------------------------------------------------
 (test :collatz-chain
@@ -55,7 +42,7 @@
         (/ n 2)
         (+ 1 (* 3 n))))
 
-  (defmemo distance (n)
+  (defmemo () distance (n)
     (if (= 1 n)
         1
         (+ 1 (distance (next n)))))
@@ -81,7 +68,7 @@
      (mapcar #'square)
      (apply #'+)))
 
-  (defmemo/int 100000 chain (n)
+  (defmemo () chain (n)
     (match (next n)
       (1 1)
       (89 89)
@@ -97,7 +84,7 @@
 ;; ----------------------------------------------------------------------------
 (test :timeout
   (let ((counter 0))
-    (defmemo/timeout 2 square (x)
+    (defmemo (:timeout 1) square (x)
       (incf counter)
       (* x x))
 

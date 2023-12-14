@@ -1,30 +1,9 @@
-(uiop:define-package #:memeozi
-  (:use :cl :alexandria :cl-annot.class)
-  (:import-from :bt2 #:with-lock-held #:make-lock)
-  (:export #:defmemo))
-(in-package :memeozi)
+(uiop:define-package #:memeozi/types
+  (:use :cl :cl-annot.class :alexandria)
+  (:import-from #:bt2 #:with-lock-held #:make-lock)
+  (:import-from #:trivia #:match))
+(in-package :memeozi/types)
 (cl-annot:enable-annot-syntax)
-
-;; ----------------------------------------------------------------------------
-(defun suffix-name (name suffix)
-  (read-from-string (format nil "~a~a" name suffix)))
-
-;; ----------------------------------------------------------------------------
-(defmacro defmemo (opts name args &body body)
-  (let ((memo-name (suffix-name name "-memo")))
-    `(progn
-       (defparameter ,memo-name
-         (make-instance
-          'memo-fn
-          :fn (lambda ,args ,@body)
-          :limit ,(getf opts :limit)
-          :timeout ,(getf opts :timeout)))
-       (defun ,name ,args
-         (if-let ((memo (lookup ,memo-name (list ,@args))))
-           memo
-           (let ((result (calculate ,memo-name (list ,@args))))
-             (record ,memo-name (list ,@args) result)
-             result))))))
 
 ;; ----------------------------------------------------------------------------
 @export-class
@@ -67,6 +46,7 @@
     :documentation "Maximum age of results")))
 
 ;; ----------------------------------------------------------------------------
+@export
 (defmethod lookup ((obj memo-fn) key)
   (with-lock-held ((memo-fn-lock obj))
     (when-let ((memo (gethash key (memo-fn-table obj))))
@@ -76,6 +56,7 @@
           (memo-entry-value memo))))))
 
 ;; ----------------------------------------------------------------------------
+@export
 (defmethod purge ((obj memo-fn))
   (loop :with total := 0
         :with index := 0
@@ -87,10 +68,12 @@
         :do (incf index)))
 
 ;; ----------------------------------------------------------------------------
+@export
 (defmethod calculate ((obj memo-fn) args)
   (apply (memo-fn-fn obj) args))
 
 ;; ----------------------------------------------------------------------------
+@export
 (defmethod record ((obj memo-fn) args value)
   (with-lock-held ((memo-fn-lock obj))
     (let ((limit (memo-fn-limit obj)))
