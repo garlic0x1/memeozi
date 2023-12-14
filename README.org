@@ -30,3 +30,12 @@ This example will memoize up to 500 values, and will not return results older th
 Currently the only two options are limit and timeout, if a limit is set, the method "purge" is called to delete entries with below-average lookup frequencies along with any outdated entries.
 
 Automatic access and manipulation of the memo table is protected by a lock, so you shouldn't have to worry about using a memoized function from multiple threads.
+
+For a simpler solution with less overhead, use defmemo/simple, which takes no option list.  It is still thread-safe, but it only stores args and result, no timestamps or frequency counts.
+#+begin_src lisp
+(defmemo/simple add (a b)
+  (+ a b))
+#+end_src
+
+* Limitations
+You cannot use &rest or &key arguments in a memoized function, perhaps I will be able to make this work at a later time.
