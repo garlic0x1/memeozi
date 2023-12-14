@@ -76,15 +76,21 @@
           (memo-entry-value memo))))))
 
 ;; ----------------------------------------------------------------------------
+(defun average-count (table)
+  (ceiling
+   (/ (reduce #'+ (maphash (lambda (k v) (declare (ignore k)) (memo-entry-count v)) table))
+      (hash-table-count table))))
+
+;; ----------------------------------------------------------------------------
 (defmethod purge ((obj memo-fn))
-  (loop :with total := 0
-        :with index := 0
-        :for k :being :the :hash-keys :of (memo-fn-table obj)
-        :for v := (gethash k (memo-fn-table obj))
-        :do (when (< (memo-entry-count v) (/ total index))
-              (remhash k (memo-fn-table obj)))
-        :do (incf total (memo-entry-count v))
-        :do (incf index)))
+  (let* ((average (average-count (memo-fn-table obj)))
+         (timeout (memo-fn-timeout obj))
+         (too-old (lambda (v) (and timeout (< (- (get-universal-time) timeout) (memo-entry-age v)))))
+         (too-rare (lambda (v) (< (memo-entry-count v) average))))
+    (loop :for k :being :the :hash-keys :of (memo-fn-table obj)
+          :for v := (gethash k (memo-fn-table obj))
+          :do (when (or (too-old v) (too-rare v))
+                (remhash k (memo-fn-table obj))))))
 
 ;; ----------------------------------------------------------------------------
 (defmethod calculate ((obj memo-fn) args)
