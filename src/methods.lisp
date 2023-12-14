@@ -21,7 +21,7 @@
     (ceiling (/ numer denom))))
 
 ;; ----------------------------------------------------------------------------
-(defmethod purge ((obj memo-fn))
+(defmethod purge ((obj memo-fn) (_strategy (eql :frequency)))
   (let* ((mean (mean-count obj))
          (timeout (memo-fn-age-limit obj))
          (too-old (lambda (v) (and timeout (< (- (get-universal-time) timeout) (memo-entry-age v)))))
@@ -40,6 +40,6 @@
   (with-lock-held ((memo-fn-lock obj))
     (let ((limit (memo-fn-size-limit obj)))
       (when (and limit (> (hash-table-count (memo-fn-table obj)) limit))
-        (purge obj))
+        (purge obj (memo-fn-strategy obj)))
       (setf (gethash args (memo-fn-table obj))
             (make-instance 'memo-entry :value value)))))

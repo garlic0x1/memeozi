@@ -34,11 +34,16 @@
     :initform (bt2:make-lock)
     :accessor memo-fn-lock
     :documentation "Lock to be used by internal methods")
+   (strategy
+    :initarg :strategy
+    :initform :frequency
+    :accessor memo-fn-strategy
+    :documentation "Memoization strategy to use, effects purge method")
    (size-limit
-    :initarg :limit
+    :initarg :size-limit
     :accessor memo-fn-size-limit
     :documentation "Size limit of the memo-table, nil means no limit")
    (age-limit
-    :initarg :timeout
+    :initarg :age-limit
     :accessor memo-fn-age-limit
     :documentation "Maximum age of results")))

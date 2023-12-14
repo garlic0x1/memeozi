@@ -32,8 +32,9 @@
          (make-instance
           'memo-fn
           :fn (lambda ,args ,@body)
-          :limit ,(getf opts :limit)
-          :timeout ,(getf opts :timeout)))
+          :size-limit ,(getf opts :size-limit)
+          :age-limit ,(getf opts :age-limit)
+          :strategy ,(getf opts :strategy :frequency)))
        (defun ,name ,args
          (if-let ((memo (lookup ,memo-name (list ,@args))))
            memo
