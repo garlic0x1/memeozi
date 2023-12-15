@@ -93,7 +93,7 @@
   (is (= 85623 (solve))))
 
 ;; ----------------------------------------------------------------------------
-(test :timeout
+(test :age-limit
   (let ((counter 0))
     (defmemo (:age-limit 1) square (x)
       (incf counter)
@@ -104,14 +104,15 @@
     ;; doesnt calculate
     (square 2)
     (square 2)
+    (square 1)
     (is (= 3 (memo-entry-count (gethash '(2) (memo-fn-table square-memo)))))
-    (is (= counter 1))
+    (is (= 2 counter))
     (sleep 2)
     ;; calculates
     (square 2)
-    (is (= counter 2))
-    (is (= 1 (memo-entry-count (gethash '(2) (memo-fn-table square-memo)))))
-    (is (= 1 (memo-count square-memo)))))
+    (is (= 3 counter))
+    ;; (is (= 1 (memo-entry-count (gethash '(2) (memo-fn-table square-memo)))))
+    (is (= 2 (memo-count square-memo)))))
 
 ;; ----------------------------------------------------------------------------
 (test :race

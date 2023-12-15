@@ -49,3 +49,5 @@ Strategy options:
   Deletes half of entries.
 * Limitations
 You cannot use &rest or &key arguments in a memoized function, perhaps I will be able to make this work at a later time.
+
+:age-limit must be an integer, if you try to use a float, the timestamp will lose precision and things will not work as expected.

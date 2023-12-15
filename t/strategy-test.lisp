@@ -40,13 +40,16 @@
   (loop :for i :from 1 :to 100
         :do (square i))
 
-  (sleep 0.5)
+  (sleep 1)
   (loop :for i :from 1 :to 100
         :do (square (+ 100 i)))
 
   (is (= 200 (memo-count square-memo)))
   (square 9999)
-  (is (= 101 (memo-count square-memo))))
+  (is (= 101 (memo-count square-memo)))
+  (is (gethash '(140) (memo-fn-table square-memo)))
+  (is (not (gethash '(40) (memo-fn-table square-memo))))
+  )
 
 
 ;; ----------------------------------------------------------------------------
