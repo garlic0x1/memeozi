@@ -3,4 +3,5 @@
   :license "MIT"
   :depends-on (:alexandria :fiveam :memeozi :trivia)
   :components ((:module "t"
-                :components ((:file "memeozi-test")))))
+                :components ((:file "memeozi-test")
+                             (:file "strategy-test")))))

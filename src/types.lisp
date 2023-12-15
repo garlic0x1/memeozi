@@ -36,7 +36,6 @@
     :documentation "Lock to be used by internal methods")
    (strategy
     :initarg :strategy
-    :initform :frequency
     :accessor memo-fn-strategy
     :documentation "Memoization strategy to use, effects purge method")
    (size-limit

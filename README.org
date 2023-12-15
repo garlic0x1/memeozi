@@ -21,13 +21,11 @@ Use defmemo like defun, with a plist of options before the name. Results of the 
 
 Options can be provided to modify the behavior of the memoizer:
 #+begin_src lisp
-(defmemo (:limit 500 :timeout 5) dostuff (in)
+(defmemo (:size-limit 500 :age-limit 5) dostuff (in)
     (stuff in))
 #+end_src
 
 This example will memoize up to 500 values, and will not return results older than 5 seconds.
-
-Currently the only two options are limit and timeout, if a limit is set, the method "purge" is called to delete entries with below-average lookup frequencies along with any outdated entries.
 
 Automatic access and manipulation of the memo table is protected by a lock, so you shouldn't have to worry about using a memoized function from multiple threads.
 
@@ -36,6 +34,18 @@ For a simpler solution with less overhead, use defmemo/simple, which takes no op
 (defmemo/simple add (a b)
   (+ a b))
 #+end_src
+* Strategies
+The options :size-limit and :age-limit allow you to apply limits to the memo table.  You can also use the :strategy option to use different strategies for purging the table when when :size-limit is reached.
 
+Strategy options:
+- :mean-freq
+
+  Deletes entries with lower than average lookup frequencies.
+- :mean-age
+
+  Deletes entries with older than average time of calculation.
+- :thanos
+
+  Deletes half of entries.
 * Limitations
 You cannot use &rest or &key arguments in a memoized function, perhaps I will be able to make this work at a later time.

@@ -35,7 +35,7 @@
           :fn (lambda ,args ,@body)
           :size-limit ,(getf opts :size-limit)
           :age-limit ,(getf opts :age-limit)
-          :strategy ,(getf opts :strategy :frequency)))
+          :strategy ,(getf opts :strategy :mean-freq)))
        (defun ,name ,args
          (if-let ((memo (lookup ,memo-name (list ,@args))))
            memo

@@ -5,5 +5,6 @@
   :depends-on (:alexandria :cl-annot :bordeaux-threads)
   :components ((:module "src"
                 :components ((:file "types")
+                             (:file "strategy")
                              (:file "methods")
                              (:file "core")))))

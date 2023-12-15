@@ -16,9 +16,11 @@
   (defmemo (:size-limit 100 :age-limit 30) add (a b)
     (+ a b))
 
+  ;; make sure limits initialized correctly
   (is (= 100 (memo-fn-size-limit add-memo)))
   (is (= 30 (memo-fn-age-limit add-memo)))
-  (is (eql :frequency (memo-fn-strategy add-memo))))
+  ;; mean-freq is the default strategy
+  (is (eql :mean-freq (memo-fn-strategy add-memo))))
 
 ;; ----------------------------------------------------------------------------
 (test :basic
@@ -110,26 +112,6 @@
     (is (= counter 2))
     (is (= 1 (memo-entry-count (gethash '(2) (memo-fn-table square-memo)))))
     (is (= 1 (memo-count square-memo)))))
-
-;; ----------------------------------------------------------------------------
-(test :size-limit
-  (defmemo (:size-limit 5) square (x)
-    (* x x))
-
-  (square 1)
-  (square 2)
-  (square 2)
-  (square 2)
-  (square 2)
-  (square 3)
-  (square 4)
-  (square 5)
-  (is (= 5 (memo-count square-memo)))
-  (square 6)
-  (square 7)
-  (is (= 2 (memo-count square-memo)))
-  (loop :for v :being :the :hash-values :of (memo-fn-table square-memo)
-        :do (is (= 1 (memo-entry-count v)))))
 
 ;; ----------------------------------------------------------------------------
 (test :race
