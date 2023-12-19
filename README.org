@@ -3,7 +3,7 @@
 * Introduction
 A library for memoizing functions
 #+begin_src bash
-git clone https://github.com/garlic0x1/memeozi.git ~/quicklisp/local-projects/
+git clone https://github.com/garlic0x1/memeozi.git ~/quicklisp/local-projects/memeozi
 #+end_src
 The name is just "memoize" with vowels shifted :)
 
