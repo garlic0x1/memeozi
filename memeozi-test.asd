@@ -4,4 +4,5 @@
   :depends-on (:alexandria :fiveam :memeozi :trivia)
   :components ((:module "t"
                 :components ((:file "memeozi-test")
+                             (:file "math-test")
                              (:file "strategy-test")))))

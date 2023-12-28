@@ -39,7 +39,13 @@ When limit is reached, delete entries accessed less than average.
   (* x x))
 #+end_src
 
-Automatic access and manipulation of the memo table is protected by a lock, so you don't have to worry about using a memoized function from multiple threads. If you manually touch the table, use the lock to be safe.
+Don't use locks to access the table (this saves time in single-threaded applications).
+#+begin_src lisp
+(defmemo (:lock? nil) square (x)
+  (* x x))
+#+end_src
+
+If :lock? is not nill, automatic access and manipulation of the memo table is protected by a lock, so you don't have to worry about using a memoized function from multiple threads. If you manually touch the table, use the lock to be safe.
 
 For a simpler solution with less overhead, use defmemo/simple, which takes no option list.  It is still thread-safe, but it only stores args and result, no timestamps or frequency counts.
 #+begin_src lisp

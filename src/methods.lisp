@@ -5,23 +5,35 @@
 (in-package :memeozi/methods)
 
 ;; ----------------------------------------------------------------------------
+(defmethod lookup-internal ((obj memo-fn) key)
+  (when-let ((memo (gethash key (memo-fn-table obj))))
+    (let ((timeout (memo-fn-age-limit obj)))
+      (unless (and timeout (> (get-universal-time) (+ timeout (memo-entry-age memo))))
+        (incf (memo-entry-count memo))
+        (memo-entry-value memo)))))
+
+;; ----------------------------------------------------------------------------
 (defmethod lookup ((obj memo-fn) key)
-  (with-lock-held ((memo-fn-lock obj))
-    (when-let ((memo (gethash key (memo-fn-table obj))))
-      (let ((timeout (memo-fn-age-limit obj)))
-        (unless (and timeout (> (get-universal-time) (+ timeout (memo-entry-age memo))))
-          (incf (memo-entry-count memo))
-          (memo-entry-value memo))))))
+  (if-let (lock (memo-fn-lock obj))
+    (with-lock-held (lock)
+      (lookup-internal obj key))
+    (lookup-internal obj key)))
 
 ;; ----------------------------------------------------------------------------
 (defmethod calculate ((obj memo-fn) args)
   (apply (memo-fn-fn obj) args))
 
 ;; ----------------------------------------------------------------------------
+(defmethod record-internal ((obj memo-fn) args value)
+  (let ((limit (memo-fn-size-limit obj)))
+    (when (and limit (>= (hash-table-count (memo-fn-table obj)) limit))
+      (purge obj (memo-fn-strategy obj)))
+    (setf (gethash args (memo-fn-table obj))
+          (make-instance 'memo-entry :value value))))
+
+;; ----------------------------------------------------------------------------
 (defmethod record ((obj memo-fn) args value)
-  (with-lock-held ((memo-fn-lock obj))
-    (let ((limit (memo-fn-size-limit obj)))
-      (when (and limit (>= (hash-table-count (memo-fn-table obj)) limit))
-        (purge obj (memo-fn-strategy obj)))
-      (setf (gethash args (memo-fn-table obj))
-            (make-instance 'memo-entry :value value)))))
+  (if-let (lock (memo-fn-lock obj))
+    (with-lock-held (lock)
+      (record-internal obj args value))
+    (record-internal obj args value)))

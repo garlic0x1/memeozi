@@ -34,6 +34,7 @@
           'memo-fn
           :fn (lambda ,args ,@body)
           :table (make-hash-table :test ,(getf opts :test #'equal))
+          :lock (if ,(getf opts :lock? t) (bt2:make-lock) nil)
           :size-limit ,(getf opts :size-limit)
           :age-limit ,(getf opts :age-limit)
           :strategy ,(getf opts :strategy :mean-freq)))
