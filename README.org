@@ -19,26 +19,42 @@ Use defmemo like defun, with a plist of options before the name. Results of the 
 (is (= 8 (times 2 4)))
 #+end_src
 
-Options can be provided to modify the behavior of the memoizer:
+Options can be provided to modify the behavior of the memoizer.
+
+Memoize up to 500 values, and do not return results older than 5 seconds.
 #+begin_src lisp
-(defmemo (:size-limit 500 :age-limit 5) dostuff (in)
+(defmemo (:size-limit 500 :age-limit 5) do-stuff (in)
     (stuff in))
 #+end_src
 
-This example will memoize up to 500 values, and will not return results older than 5 seconds.
+Specify the :test function of the underlying hash-table to be #'eql, the default is #'equal. Only pass functions that are allowed in (make-hash-table :test #'arg).
+#+begin_src lisp
+(defmemo (:test #'eql) do-more-stuff (a b)
+  (more-stuff a b))
+#+end_src
 
-Automatic access and manipulation of the memo table is protected by a lock, so you shouldn't have to worry about using a memoized function from multiple threads.
+When limit is reached, delete entries accessed less than average.
+#+begin_src lisp
+(defmemo (:strategy :mean-freq :size-limit 10) square (x)
+  (* x x))
+#+end_src
+
+Automatic access and manipulation of the memo table is protected by a lock, so you don't have to worry about using a memoized function from multiple threads. If you manually touch the table, use the lock to be safe.
 
 For a simpler solution with less overhead, use defmemo/simple, which takes no option list.  It is still thread-safe, but it only stores args and result, no timestamps or frequency counts.
 #+begin_src lisp
 (defmemo/simple add (a b)
   (+ a b))
 #+end_src
+
+This can also be a nice template for very specific memoizers, like using an array as a table.
 * Strategies
-The options :size-limit and :age-limit allow you to apply limits to the memo table.  You can also use the :strategy option to use different strategies for purging the table when when :size-limit is reached.
+The options :size-limit and :age-limit allow you to apply limits to the memo table.
+
+Use the :strategy option to use different strategies for purging the table when when :size-limit is reached.
 
 Strategy options:
-- :mean-freq
+- :mean-freq (default)
 
   Deletes entries with lower than average lookup frequencies.
 - :mean-age
@@ -48,6 +64,8 @@ Strategy options:
 
   Deletes half of entries.
 * Limitations
-You cannot use &rest or &key arguments in a memoized function, perhaps I will be able to make this work at a later time.
+You cannot use &rest &optional or &key arguments in a memoized function. (TODO)
+
+You cannot return multiple values from a memoized function. (TODO)
 
 :age-limit must be an integer, if you try to use a float, the timestamp will lose precision and things will not work as expected.

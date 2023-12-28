@@ -20,7 +20,12 @@
   (is (= 100 (memo-fn-size-limit add-memo)))
   (is (= 30 (memo-fn-age-limit add-memo)))
   ;; mean-freq is the default strategy
-  (is (eql :mean-freq (memo-fn-strategy add-memo))))
+  (is (eql :mean-freq (memo-fn-strategy add-memo)))
+
+  ;; make sure test inits correctly
+  (defmemo (:test #'eql) my-eql (a b)
+    (eql a b))
+  (is (eql 'eql (hash-table-test (memo-fn-table my-eql-memo)))))
 
 ;; ----------------------------------------------------------------------------
 (test :basic
@@ -113,6 +118,29 @@
     (is (= 3 counter))
     ;; (is (= 1 (memo-entry-count (gethash '(2) (memo-fn-table square-memo)))))
     (is (= 2 (memo-count square-memo)))))
+
+;; ----------------------------------------------------------------------------
+(test :equality
+  (defmemo () my-equal (a b)
+    (equal a b))
+
+  (is (not (my-equal (float 1) 1)))
+  (is (my-equal 1 1))
+  (is (= 2 (memo-count my-equal-memo)))
+
+  (defmemo (:test #'equalp) my-equalp (a b)
+    (equalp a b))
+
+  (is (my-equalp (float 1) 1))
+  (is (my-equalp 1 1))
+  (is (= 1 (memo-count my-equalp-memo)))
+
+  (defmemo (:test #'eql) my-eql (a b)
+    (eql a b))
+
+  (is (not (my-eql 1 1.0)))
+  (is (my-eql 1 1))
+  (is (my-eql :hi :hi)))
 
 ;; ----------------------------------------------------------------------------
 (test :race

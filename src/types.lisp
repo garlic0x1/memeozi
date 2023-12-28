@@ -27,7 +27,8 @@
     :accessor memo-fn-fn
     :documentation "Function to memoize")
    (table
-    :initform (make-hash-table :test #'equal)
+    :initarg :table
+    ;; :initform (make-hash-table :test #'equal)
     :accessor memo-fn-table
     :documentation "Hash-table holding memos")
    (lock
