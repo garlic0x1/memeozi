@@ -21,7 +21,7 @@
 
 ;; ----------------------------------------------------------------------------
 (defmethod calculate ((obj memo-fn) args)
-  (apply (memo-fn-fn obj) args))
+  (multiple-value-list (apply (memo-fn-fn obj) args)))
 
 ;; ----------------------------------------------------------------------------
 (defmethod record-internal ((obj memo-fn) args value)

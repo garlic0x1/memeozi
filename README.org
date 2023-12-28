@@ -72,6 +72,4 @@ Strategy options:
 * Limitations
 You cannot use &rest &optional or &key arguments in a memoized function. (TODO)
 
-You cannot return multiple values from a memoized function. (TODO)
-
 :age-limit must be an integer, if you try to use a float, the timestamp will lose precision and things will not work as expected.

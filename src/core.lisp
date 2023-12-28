@@ -40,7 +40,7 @@
           :strategy ,(getf opts :strategy :mean-freq)))
        (defun ,name ,args
          (if-let ((memo (lookup ,memo-name (list ,@args))))
-           memo
+           (apply #'values memo)
            (let ((result (calculate ,memo-name (list ,@args))))
              (record ,memo-name (list ,@args) result)
-             result))))))
+             (apply #'values result)))))))

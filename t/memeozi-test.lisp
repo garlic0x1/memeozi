@@ -96,6 +96,15 @@
   (is (my-eql :hi :hi)))
 
 ;; ----------------------------------------------------------------------------
+(test :multi-value
+  (defmemo () vals (a b)
+    (values a b))
+
+  (is (equal '(1 2) (multiple-value-list (vals 1 2))))
+  (is (equal '(1 "hi") (multiple-value-list (vals 1 "hi"))))
+  (is (= 1 (vals 1 2))))
+
+;; ----------------------------------------------------------------------------
 (test :race
   (defmemo () square (x)
     (* x x))
